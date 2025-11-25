@@ -83,17 +83,18 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
   const outgoingContracts = company.contracts.filter(c => c.type === ContractType.OUTGOING);
 
   // Helper to render nested contracts
-  const renderContract = (c: Contract) => (
-      <ContractItem 
-          key={c.id} 
-          contract={c} 
+  const renderContract = (c: Contract, parentColor?: string) => (
+      <ContractItem
+          key={c.id}
+          contract={c}
           nodeId={nodeId}
           companyId={company.id}
+          parentColor={parentColor}
           onDelete={() => onDeleteContract(c.id)}
           onAddBatch={(b) => onAddBatch(c.id, b)}
           onDeleteBatch={(bid) => onDeleteBatch(c.id, bid)}
           onNestContract={(childId, parentId) => onNestContract(parentId, childId)}
-          renderSubContract={renderContract}
+          renderSubContract={(sub, color) => renderContract(sub, color ?? c.color)}
       />
   );
 
