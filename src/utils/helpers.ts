@@ -22,31 +22,43 @@ export const calculateTax = (amount: number, rate: number): number => {
   return amount - base;
 };
 
+export const COLOR_PALETTE = [
+  '#ef4444', // Red 500
+  '#f97316', // Orange 500
+  '#f59e0b', // Amber 500
+  '#84cc16', // Lime 500
+  '#10b981', // Emerald 500
+  '#06b6d4', // Cyan 500
+  '#3b82f6', // Blue 500
+  '#6366f1', // Indigo 500
+  '#8b5cf6', // Violet 500
+  '#d946ef', // Fuchsia 500
+  '#f43f5e', // Rose 500
+  '#64748b', // Slate 500
+  '#0ea5e9', // Sky 500
+  '#a855f7', // Purple 500
+  '#ec4899', // Pink 500
+];
+
 // Generate a consistent, distinct color from a string
 export const stringToColor = (str: string): string => {
-  const colors = [
-    '#ef4444', // Red 500
-    '#f97316', // Orange 500
-    '#f59e0b', // Amber 500
-    '#84cc16', // Lime 500
-    '#10b981', // Emerald 500
-    '#06b6d4', // Cyan 500
-    '#3b82f6', // Blue 500
-    '#6366f1', // Indigo 500
-    '#8b5cf6', // Violet 500
-    '#d946ef', // Fuchsia 500
-    '#f43f5e', // Rose 500
-    '#64748b', // Slate 500
-    '#0ea5e9', // Sky 500
-    '#a855f7', // Purple 500
-    '#ec4899', // Pink 500
-  ];
   
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
-  
-  const index = Math.abs(hash) % colors.length;
-  return colors[index];
+
+  const index = Math.abs(hash) % COLOR_PALETTE.length;
+  return COLOR_PALETTE[index];
+};
+
+export const pickDistinctColor = (preferredColor: string, usedColors: string[]): string => {
+  if (!usedColors.includes(preferredColor)) return preferredColor;
+
+  for (const color of COLOR_PALETTE) {
+    if (!usedColors.includes(color)) return color;
+  }
+
+  // If all colors are used, fall back to the preferred color
+  return preferredColor;
 };
