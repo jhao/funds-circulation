@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Project, Company, Contract, FinancialBatch, ContractType } from '../types';
+import { useEffect, useState } from 'react';
+import { Project, Contract, FinancialBatch, ContractType } from '../types';
 import { getProjectById, addNodeToProject, addCompanyToNode, addContractToCompany, deleteCompany, deleteContract, addFinancialBatch, deleteFinancialBatch, nestContract } from '../services/storageService';
 import { VisualizationHeader } from '../components/VisualizationHeader';
 import { CompanyCard } from '../components/CompanyCard';
@@ -11,7 +11,7 @@ interface ProjectDetailProps {
   onNavigate: (route: string) => void;
 }
 
-export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onNavigate }) => {
+export const ProjectDetail = ({ projectId, onNavigate }: ProjectDetailProps) => {
   const [project, setProject] = useState<Project | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   

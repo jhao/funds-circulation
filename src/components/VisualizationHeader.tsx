@@ -1,13 +1,13 @@
-import React, { useMemo } from 'react';
-import { Project } from '../types';
+import type { FC } from 'react';
+import { useMemo } from 'react';
 import { formatCurrency } from '../utils/helpers';
-import * as d3 from 'd3';
+import type { Project } from '../types';
 
 interface VisualizationHeaderProps {
   project: Project;
 }
 
-export const VisualizationHeader: React.FC<VisualizationHeaderProps> = ({ project }) => {
+export const VisualizationHeader: FC<VisualizationHeaderProps> = ({ project }) => {
   // Calculate totals per node for a simple bar chart visualization
   const data = useMemo(() => {
     return project.nodes.map(node => {

@@ -1,4 +1,4 @@
-import { Project, ProjectNode, Company, Contract, ProjectStatus, ContractType, FinancialBatch } from '../types';
+import { Contract, FinancialBatch, Project } from '../types';
 import { generateId, stringToColor } from '../utils/helpers';
 
 const STORAGE_KEY = 'finance_circle_projects';
