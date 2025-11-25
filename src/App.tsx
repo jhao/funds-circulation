@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Dashboard } from './pages/Dashboard';
 import { ProjectDetail } from './pages/ProjectDetail';
 
@@ -20,7 +20,6 @@ function App() {
   };
 
   // Route matching logic
-  let Component;
   if (route.startsWith('#/project/')) {
     const projectId = route.split('#/project/')[1];
     return <ProjectDetail projectId={projectId} onNavigate={navigate} />;
