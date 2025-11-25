@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Project, Contract, FinancialBatch, ContractType } from '../types';
 import { getProjectById, addNodeToProject, addCompanyToNode, addContractToCompany, deleteCompany, deleteContract, addFinancialBatch, deleteFinancialBatch, nestContract } from '../services/storageService';
 import { VisualizationHeader } from '../components/VisualizationHeader';
@@ -42,9 +42,12 @@ export const ProjectDetail = ({ projectId, onNavigate }: ProjectDetailProps) => 
     setProject(p);
   };
 
-  const contractColorMap = useMemo(() => {
-    const map = new Map<string, string>();
+  const [contractColorMap, setContractColorMap] = useState<Map<string, string>>(new Map());
 
+  useEffect(() => {
+    if (!project) return;
+
+    const map = new Map<string, string>();
     const traverseContracts = (contracts: Contract[]) => {
       contracts.forEach((c) => {
         map.set(c.id, c.color);
@@ -54,11 +57,36 @@ export const ProjectDetail = ({ projectId, onNavigate }: ProjectDetailProps) => 
       });
     };
 
-    project?.nodes.forEach((node) => {
+    project.nodes.forEach((node) => {
       node.companies.forEach((company) => traverseContracts(company.contracts));
     });
 
-    return map;
+    setContractColorMap(map);
+  }, [project]);
+
+  useLayoutEffect(() => {
+    if (!project || !boardRef.current) return;
+
+    const raf = window.requestAnimationFrame(() => {
+      const elements = boardRef.current?.querySelectorAll<HTMLElement>('[data-contract-id]');
+      if (!elements || elements.length === 0) return;
+
+      setContractColorMap((prev) => {
+        const updated = new Map(prev);
+        elements.forEach((el) => {
+          const contractId = el.dataset.contractId;
+          if (!contractId) return;
+          const computed = window.getComputedStyle(el);
+          const borderLeftColor = computed.borderLeftColor || computed.borderColor;
+          if (borderLeftColor) {
+            updated.set(contractId, borderLeftColor);
+          }
+        });
+        return updated;
+      });
+    });
+
+    return () => window.cancelAnimationFrame(raf);
   }, [project]);
 
   useEffect(() => {
