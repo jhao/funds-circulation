@@ -7,20 +7,22 @@ interface ContractItemProps {
   contract: Contract;
   nodeId: string;
   companyId?: string; // Needed for verify nesting source
+  parentColor?: string;
   onDelete: () => void;
   onAddBatch: (batch: Omit<FinancialBatch, 'id'>) => void;
   onDeleteBatch: (batchId: string) => void;
   // New props for recursion and nesting
   onNestContract?: (draggedContractId: string, targetContractId: string) => void;
-  renderSubContract?: (sub: Contract) => React.ReactNode;
+  renderSubContract?: (sub: Contract, parentColor?: string) => React.ReactNode;
 }
 
-export const ContractItem: React.FC<ContractItemProps> = ({ 
-    contract, 
+export const ContractItem: React.FC<ContractItemProps> = ({
+    contract,
     nodeId,
     companyId,
-    onDelete, 
-    onAddBatch, 
+    parentColor,
+    onDelete,
+    onAddBatch,
     onDeleteBatch,
     onNestContract,
     renderSubContract
@@ -115,13 +117,17 @@ export const ContractItem: React.FC<ContractItemProps> = ({
   }, 0);
   const remainingIncomingMargin = contract.totalAmount - totalSubAmount;
 
+  const borderColor = contract.type === ContractType.OUTGOING && parentColor
+    ? parentColor
+    : contract.color;
+
   return (
-    <div 
-      className={`mb-3 border rounded-lg bg-white shadow-sm overflow-hidden transition-all duration-200 
+    <div
+      className={`mb-3 border rounded-lg bg-white shadow-sm overflow-hidden transition-all duration-200
         ${contract.type === ContractType.OUTGOING ? 'cursor-grab active:cursor-grabbing' : ''}
         ${isDragOver ? 'ring-2 ring-primary ring-offset-1 bg-blue-50' : ''}
       `}
-      style={{ borderLeft: `4px solid ${contract.color}` }}
+      style={{ borderLeft: `4px solid ${borderColor}` }}
       draggable={contract.type === ContractType.OUTGOING}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
@@ -284,7 +290,7 @@ export const ContractItem: React.FC<ContractItemProps> = ({
            {subContracts.length > 0 && renderSubContract && (
                <div className="mt-2 border-l-2 border-dashed border-gray-300 pl-2">
                    <div className="text-[10px] text-gray-500 font-semibold mb-2 uppercase">关联转出合同 (Nested)</div>
-                   {subContracts.map(sub => renderSubContract(sub))}
+                   {subContracts.map(sub => renderSubContract(sub, contract.color))}
                </div>
            )}
 
