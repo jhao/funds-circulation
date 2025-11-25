@@ -1,0 +1,5 @@
+{
+  "name": "财圈管理 (Finance Circle)",
+  "description": "A comprehensive frontend system for managing engineering projects, multi-company contracts, invoicing, and payment flows with a Kanban-style visualization.",
+  "requestFramePermissions": []
+}
