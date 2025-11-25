@@ -1,5 +1,5 @@
-import { Contract, FinancialBatch, Project } from '../types';
-import { generateId, stringToColor } from '../utils/helpers';
+import { Contract, ContractType, FinancialBatch, Project } from '../types';
+import { generateId, pickDistinctColor, stringToColor } from '../utils/helpers';
 
 const STORAGE_KEY = 'finance_circle_projects';
 
@@ -109,9 +109,9 @@ export const addCompanyToNode = (projectId: string, nodeId: string, companyName:
 
 // Helper to add a contract to a company
 export const addContractToCompany = (
-  projectId: string, 
-  nodeId: string, 
-  companyId: string, 
+  projectId: string,
+  nodeId: string,
+  companyId: string,
   contractData: Omit<Contract, 'id' | 'color' | 'financials'> & { color?: string }
 ): Project | undefined => {
   const project = getProjectById(projectId);
@@ -121,10 +121,36 @@ export const addContractToCompany = (
   if (node) {
     const company = node.companies.find(c => c.id === companyId);
     if (company) {
+      const resolveIncomingColor = (): string => {
+        const incomingContracts = company.contracts.filter(c => c.type === ContractType.INCOMING);
+
+        // Keep the same color if another contract is linked to the same source
+        if (contractData.sourceContractId) {
+          const siblingFromSameSource = incomingContracts.find(
+            c => c.sourceContractId === contractData.sourceContractId
+          );
+          if (siblingFromSameSource) return siblingFromSameSource.color;
+        }
+
+        const preferredColor = contractData.color || stringToColor(contractData.title);
+        const usedColors = incomingContracts
+          .filter(c => c.sourceContractId !== contractData.sourceContractId)
+          .map(c => c.color);
+
+        return pickDistinctColor(preferredColor, usedColors);
+      };
+
+      const resolveColor = (): string => {
+        if (contractData.type === ContractType.INCOMING) {
+          return resolveIncomingColor();
+        }
+        return contractData.color || stringToColor(contractData.title);
+      };
+
       company.contracts.push({
         ...contractData,
         id: generateId(),
-        color: contractData.color || stringToColor(contractData.title), // Use provided color (e.g. from source) or generate
+        color: resolveColor(),
         financials: [],
         subContracts: []
       });
