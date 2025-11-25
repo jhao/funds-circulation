@@ -30,7 +30,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: publish        # 与 Vite outDir 保持一致
+          path: dist        # 与 Vite outDir 保持一致
 
   deploy:
     needs: build
