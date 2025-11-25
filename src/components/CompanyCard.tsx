@@ -8,6 +8,9 @@ interface CompanyCardProps {
   company: Company;
   nodeId: string;
   isFirstNode: boolean;
+  contractColorMap: Map<string, string>;
+  flashTargetId?: string;
+  onHighlightLinked?: (sourceId: string) => void;
   onAddContract: (data: Omit<Contract, 'id' | 'color' | 'financials'>) => void;
   onDeleteCompany: () => void;
   onDeleteContract: (contractId: string) => void;
@@ -18,10 +21,13 @@ interface CompanyCardProps {
 }
 
 export const CompanyCard: React.FC<CompanyCardProps> = ({ 
-    company, 
+    company,
     nodeId,
     isFirstNode,
-    onAddContract, 
+    contractColorMap,
+    flashTargetId,
+    onHighlightLinked,
+    onAddContract,
     onDeleteCompany,
     onDeleteContract,
     onAddBatch,
@@ -83,20 +89,33 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({
   const outgoingContracts = company.contracts.filter(c => c.type === ContractType.OUTGOING);
 
   // Helper to render nested contracts
-  const renderContract = (c: Contract, parentColor?: string) => (
-      <ContractItem
-          key={c.id}
-          contract={c}
-          nodeId={nodeId}
-          companyId={company.id}
-          parentColor={parentColor}
-          onDelete={() => onDeleteContract(c.id)}
-          onAddBatch={(b) => onAddBatch(c.id, b)}
-          onDeleteBatch={(bid) => onDeleteBatch(c.id, bid)}
-          onNestContract={(childId, parentId) => onNestContract(parentId, childId)}
-          renderSubContract={(sub, color) => renderContract(sub, color ?? c.color)}
-      />
-  );
+  const resolveContractColor = (c: Contract, parentColor?: string) => {
+      const linkedColor = c.sourceContractId ? contractColorMap.get(c.sourceContractId) : undefined;
+      if (parentColor) return parentColor;
+      if (linkedColor) return linkedColor;
+      return c.color;
+  };
+
+  const renderContract = (c: Contract, parentColor?: string) => {
+      const resolvedColor = resolveContractColor(c, parentColor);
+      return (
+        <ContractItem
+            key={c.id}
+            contract={c}
+            nodeId={nodeId}
+            companyId={company.id}
+            parentColor={parentColor}
+            resolvedColor={resolvedColor}
+            highlightId={flashTargetId}
+            onHighlightLinked={onHighlightLinked}
+            onDelete={() => onDeleteContract(c.id)}
+            onAddBatch={(b) => onAddBatch(c.id, b)}
+            onDeleteBatch={(bid) => onDeleteBatch(c.id, bid)}
+            onNestContract={(childId, parentId) => onNestContract(parentId, childId)}
+            renderSubContract={(sub) => renderContract(sub, resolvedColor)}
+        />
+      );
+  };
 
   return (
     <div 

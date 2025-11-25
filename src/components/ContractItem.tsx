@@ -8,6 +8,9 @@ interface ContractItemProps {
   nodeId: string;
   companyId?: string; // Needed for verify nesting source
   parentColor?: string;
+  resolvedColor?: string;
+  highlightId?: string;
+  onHighlightLinked?: (sourceId: string) => void;
   onDelete: () => void;
   onAddBatch: (batch: Omit<FinancialBatch, 'id'>) => void;
   onDeleteBatch: (batchId: string) => void;
@@ -21,6 +24,9 @@ export const ContractItem: React.FC<ContractItemProps> = ({
     nodeId,
     companyId,
     parentColor,
+    resolvedColor,
+    highlightId,
+    onHighlightLinked,
     onDelete,
     onAddBatch,
     onDeleteBatch,
@@ -117,16 +123,19 @@ export const ContractItem: React.FC<ContractItemProps> = ({
   }, 0);
   const remainingIncomingMargin = contract.totalAmount - totalSubAmount;
 
-  const borderColor = contract.type === ContractType.OUTGOING && parentColor
+  const borderColor = resolvedColor || (contract.type === ContractType.OUTGOING && parentColor
     ? parentColor
-    : contract.color;
+    : contract.color);
+  const isHighlighted = highlightId === contract.id;
 
   return (
     <div
       className={`mb-3 border rounded-lg bg-white shadow-sm overflow-hidden transition-all duration-200
         ${contract.type === ContractType.OUTGOING ? 'cursor-grab active:cursor-grabbing' : ''}
         ${isDragOver ? 'ring-2 ring-primary ring-offset-1 bg-blue-50' : ''}
+        ${isHighlighted ? 'flash-highlight ring-2 ring-offset-1 ring-amber-300' : ''}
       `}
+      data-contract-id={contract.id}
       style={{ borderLeft: `4px solid ${borderColor}` }}
       draggable={contract.type === ContractType.OUTGOING}
       onDragStart={handleDragStart}
@@ -148,7 +157,18 @@ export const ContractItem: React.FC<ContractItemProps> = ({
                 </div>
                 <div className="text-xs text-gray-500 mt-1 font-mono flex gap-2">
                     <span>{formatCurrency(contract.totalAmount)}</span>
-                    {contract.sourceContractId && <span className="text-blue-500 text-[10px] bg-blue-50 px-1 rounded">Linked</span>}
+                    {contract.sourceContractId && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onHighlightLinked?.(contract.sourceContractId!);
+                        }}
+                        className="text-blue-600 text-[10px] bg-blue-50 px-1 rounded border border-blue-100 hover:bg-blue-100 transition"
+                      >
+                        Linked
+                      </button>
+                    )}
                 </div>
             </div>
             <div className="ml-2 flex items-center text-gray-400">
@@ -288,9 +308,9 @@ export const ContractItem: React.FC<ContractItemProps> = ({
 
            {/* Nested Sub-contracts Render */}
            {subContracts.length > 0 && renderSubContract && (
-               <div className="mt-2 border-l-2 border-dashed border-gray-300 pl-2">
+               <div className="mt-2 border-l-2 border-dashed pl-2" style={{ borderColor }}>
                    <div className="text-[10px] text-gray-500 font-semibold mb-2 uppercase">关联转出合同 (Nested)</div>
-                   {subContracts.map(sub => renderSubContract(sub, contract.color))}
+                   {subContracts.map(sub => renderSubContract(sub, resolvedColor || contract.color))}
                </div>
            )}
 
