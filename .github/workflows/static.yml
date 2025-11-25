@@ -11,7 +11,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        
+      - name: init install
+        run: npm install
+        
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -20,9 +23,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: init install
-        run: npm install
 
       - name: Build project
         run: npm run build
